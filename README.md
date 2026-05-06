@@ -195,6 +195,52 @@ wandb login
 
 (note: you will also need to enable WandB in the configuration. See below.)
 
+## SO-101: One Leader, Two Followers
+
+This fork adds a minimal teleoperation mode for controlling two SO-101 follower arms from one SO-101 leader arm.
+
+The new config types are:
+
+- `bi_so101_follower`: exposes two SO-101 follower arms as one bimanual robot
+- `so101_leader_to_bi_so101`: reads one SO-101 leader action stream and mirrors it to both follower arms
+
+This mode sends the same joint targets to the left and right follower arms. It does not apply left-right mirroring or per-arm offsets.
+
+### Windows quick start
+
+1. Find the serial ports for your leader arm and both follower arms in Device Manager.
+2. Replace the example `COM` ports below with your actual ports.
+3. Run teleoperation:
+
+```bash
+lerobot-teleoperate ^
+  --robot.type=bi_so101_follower ^
+  --robot.left_port=COM5 ^
+  --robot.right_port=COM6 ^
+  --teleop.type=so101_leader_to_bi_so101 ^
+  --teleop.port=COM3
+```
+
+Example port mapping:
+
+- `COM3`: SO-101 leader
+- `COM5`: left SO-101 follower
+- `COM6`: right SO-101 follower
+
+### Record a dataset with one leader and two followers
+
+```bash
+lerobot-record ^
+  --robot.type=bi_so101_follower ^
+  --robot.left_port=COM5 ^
+  --robot.right_port=COM6 ^
+  --teleop.type=so101_leader_to_bi_so101 ^
+  --teleop.port=COM3 ^
+  --dataset.repo_id=your_name/your_dataset
+```
+
+If you prefer PowerShell, replace the Windows line continuation character `^` with the PowerShell backtick `` ` `` or put the command on one line.
+
 ### Visualize datasets
 
 Check out [example 1](https://github.com/huggingface/lerobot/blob/main/examples/1_load_lerobot_dataset.py) that illustrates how to use our dataset class which automatically downloads data from the Hugging Face hub.
