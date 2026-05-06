@@ -1,0 +1,56 @@
+robot:
+  type: dual_so101_follower
+  first_arm_port: COM3
+  second_arm_port: COM5
+  id: my_dual_follower_arms
+  first_arm_id: my_awesome_follower_arm
+  second_arm_id: my_awesome_follower_arm_2
+  cameras:
+    third:
+      type: opencv
+      index_or_path: 0
+      width: 640
+      height: 480
+      fps: 15
+      warmup_s: 0
+      fourcc: MJPG
+    handeye_1:
+      type: opencv
+      index_or_path: 1
+      width: 640
+      height: 480
+      fps: 15
+      warmup_s: 0
+      fourcc: MJPG
+    handeye_2:
+      type: opencv
+      index_or_path: 3
+      width: 640
+      height: 480
+      fps: 15
+      warmup_s: 0
+      fourcc: MJPG
+
+teleop:
+  type: so101_leader
+  port: COM4
+  id: my_awesome_leader_arm
+
+display_data: true
+play_sounds: true
+resume: false
+
+dataset:
+  repo_id: local/dual_so101_demo
+  root: D:\lerobot\outputs\datasets\dual_so101_demo
+  num_episodes: 10
+  single_task: Grab the screwdriver
+  fps: 10
+  episode_time_s: 60
+  reset_time_s: 60
+  video: true
+  push_to_hub: false
+  private: false
+  num_image_writer_processes: 0
+  num_image_writer_threads_per_camera: 4
+  video_encoding_batch_size: 1
