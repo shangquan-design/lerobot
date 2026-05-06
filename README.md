@@ -213,33 +213,43 @@ This mode sends the same joint targets to the left and right follower arms. It d
 3. Run teleoperation:
 
 ```bash
-lerobot-teleoperate ^
+python -m lerobot.teleoperate ^
   --robot.type=bi_so101_follower ^
-  --robot.left_port=COM5 ^
-  --robot.right_port=COM6 ^
+  --robot.left_arm_port=COM24 ^
+  --robot.right_arm_port=COM25 ^
+  --robot.id=my_awesome_bimanual_follower_arms ^
   --teleop.type=so101_leader_to_bi_so101 ^
-  --teleop.port=COM3
+  --teleop.port=COM22 ^
+  --teleop.id=my_awesome_leader_arm
 ```
 
 Example port mapping:
 
-- `COM3`: SO-101 leader
-- `COM5`: left SO-101 follower
-- `COM6`: right SO-101 follower
+- `COM22`: SO-101 leader
+- `COM24`: left SO-101 follower
+- `COM25`: right SO-101 follower
 
 ### Record a dataset with one leader and two followers
 
+This is the 1-leader + 2-follower version of a normal SO-101 recording command with two OpenCV cameras:
+
 ```bash
-lerobot-record ^
+python -m lerobot.record ^
   --robot.type=bi_so101_follower ^
-  --robot.left_port=COM5 ^
-  --robot.right_port=COM6 ^
+  --robot.left_arm_port=COM24 ^
+  --robot.right_arm_port=COM25 ^
+  --robot.id=my_awesome_bimanual_follower_arms ^
+  --robot.cameras="{ handeye: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30}, front: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30}}" ^
   --teleop.type=so101_leader_to_bi_so101 ^
-  --teleop.port=COM3 ^
-  --dataset.repo_id=your_name/your_dataset
+  --teleop.port=COM22 ^
+  --teleop.id=my_awesome_leader_arm ^
+  --display_data=true ^
+  --dataset.repo_id=%HF_USER%/demo ^
+  --dataset.num_episodes=20 ^
+  --dataset.single_task="Grab the screwdriver"
 ```
 
-If you prefer PowerShell, replace the Windows line continuation character `^` with the PowerShell backtick `` ` `` or put the command on one line.
+If you run this from PowerShell, replace `%HF_USER%` with `$env:HF_USER` and replace the Windows Command Prompt line continuation character `^` with the PowerShell backtick `` ` ``. You can also put the command on one line.
 
 ### Visualize datasets
 
