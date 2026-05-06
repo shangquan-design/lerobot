@@ -115,8 +115,10 @@ class OpenCVCamera(Camera):
         self.fps = config.fps
         self.color_mode = config.color_mode
         self.warmup_s = config.warmup_s
+        self.fourcc = config.fourcc
 
         self.videocapture: cv2.VideoCapture | None = None
+        self._settings_applied_on_open = False
 
         self.thread: Thread | None = None
         self.stop_event: Event | None = None
@@ -159,7 +161,25 @@ class OpenCVCamera(Camera):
         # blocking in multi-threaded applications, especially during data collection.
         cv2.setNumThreads(1)
 
-        self.videocapture = cv2.VideoCapture(self.index_or_path, self.backend)
+        params = []
+        if self.fourcc is not None:
+            params += [cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*self.fourcc)]
+        if self.width is not None and self.height is not None:
+            params += [
+                cv2.CAP_PROP_FRAME_WIDTH,
+                int(self.capture_width),
+                cv2.CAP_PROP_FRAME_HEIGHT,
+                int(self.capture_height),
+            ]
+        if self.fps is not None:
+            params += [cv2.CAP_PROP_FPS, int(self.fps)]
+
+        if params:
+            self.videocapture = cv2.VideoCapture(self.index_or_path, self.backend, params)
+            self._settings_applied_on_open = True
+        else:
+            self.videocapture = cv2.VideoCapture(self.index_or_path, self.backend)
+            self._settings_applied_on_open = False
 
         if not self.videocapture.isOpened():
             self.videocapture.release()
@@ -201,6 +221,10 @@ class OpenCVCamera(Camera):
 
         if self.fps is None:
             self.fps = self.videocapture.get(cv2.CAP_PROP_FPS)
+        elif self._settings_applied_on_open:
+            actual_fps = self.videocapture.get(cv2.CAP_PROP_FPS)
+            if actual_fps > 0 and not math.isclose(self.fps, actual_fps, rel_tol=1e-3):
+                raise RuntimeError(f"{self} failed to set fps={self.fps} ({actual_fps=}).")
         else:
             self._validate_fps()
 
@@ -213,6 +237,13 @@ class OpenCVCamera(Camera):
             if self.rotation in [cv2.ROTATE_90_CLOCKWISE, cv2.ROTATE_90_COUNTERCLOCKWISE]:
                 self.width, self.height = default_height, default_width
                 self.capture_width, self.capture_height = default_width, default_height
+        elif self._settings_applied_on_open:
+            actual_width = int(round(self.videocapture.get(cv2.CAP_PROP_FRAME_WIDTH)))
+            actual_height = int(round(self.videocapture.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+            if self.capture_width != actual_width:
+                raise RuntimeError(f"{self} failed to set capture_width={self.capture_width} ({actual_width=}).")
+            if self.capture_height != actual_height:
+                raise RuntimeError(f"{self} failed to set capture_height={self.capture_height} ({actual_height=}).")
         else:
             self._validate_width_and_height()
 

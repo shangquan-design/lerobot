@@ -709,7 +709,7 @@ class MotorsBus(abc.ABC):
             raise TypeError(motors)
 
         self.reset_calibration(motors)
-        actual_positions = self.sync_read("Present_Position", motors, normalize=False)
+        actual_positions = self.sync_read("Present_Position", motors, normalize=False, num_retry=10)
         homing_offsets = self._get_half_turn_homings(actual_positions)
         for motor, offset in homing_offsets.items():
             self.write("Homing_Offset", motor, offset)
@@ -744,13 +744,18 @@ class MotorsBus(abc.ABC):
         elif not isinstance(motors, list):
             raise TypeError(motors)
 
-        start_positions = self.sync_read("Present_Position", motors, normalize=False)
+        start_positions = self.sync_read("Present_Position", motors, normalize=False, num_retry=10)
         mins = start_positions.copy()
         maxes = start_positions.copy()
+        positions = start_positions.copy()
 
         user_pressed_enter = False
         while not user_pressed_enter:
-            positions = self.sync_read("Present_Position", motors, normalize=False)
+            try:
+                positions = self.sync_read("Present_Position", motors, normalize=False, num_retry=10)
+            except ConnectionError as e:
+                logger.warning(f"Skipping one calibration read on {self.port}: {e}")
+                continue
             mins = {motor: min(positions[motor], min_) for motor, min_ in mins.items()}
             maxes = {motor: max(positions[motor], max_) for motor, max_ in maxes.items()}
 

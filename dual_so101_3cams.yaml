@@ -1,0 +1,41 @@
+teleop:
+  type: so101_leader
+  port: COM4
+  id: my_awesome_leader_arm
+
+robot:
+  type: dual_so101_follower
+  first_arm_port: COM3
+  second_arm_port: COM5
+  id: my_dual_follower_arms
+  first_arm_id: my_awesome_follower_arm
+  second_arm_id: my_awesome_follower_arm_2
+  cameras:
+    third:
+      type: opencv
+      index_or_path: 0
+      width: 640
+      height: 480
+      fps: 15
+      warmup_s: 0
+      fourcc: MJPG
+    handeye_1:
+      type: opencv
+      index_or_path: 1
+      width: 640
+      height: 480
+      fps: 15
+      warmup_s: 0
+      fourcc: MJPG
+    handeye_2:
+      type: opencv
+      index_or_path: 3
+      width: 640
+      height: 480
+      fps: 15
+      warmup_s: 0
+      fourcc: MJPG
+
+fps: 10
+teleop_time_s: null
+display_data: true
